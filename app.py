@@ -67,11 +67,6 @@ df = pd.read_csv("flight.csv")
 st.write("### Preview Data")
 st.dataframe(df.head())
 
-    if uploaded_file is not None:
-        df = load_data(uploaded_file)
-        st.subheader("Original Data Preview")
-        st.write(df.head())
-
         st.subheader("Data Preprocessing")
         df_cleaned = preprocess_data(df.copy()) # Use a copy to avoid modifying the original loaded dataframe
         st.write(f"Shape after dropping columns and missing values: {df_cleaned.shape}")
