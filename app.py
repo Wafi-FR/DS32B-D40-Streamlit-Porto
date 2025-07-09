@@ -189,8 +189,8 @@ def find_optimal_k(data_std):
     """)
 
 
-else:
-    st.info("Please upload a CSV file to get started.")
+    else:
+        st.info("Please upload a CSV file to get started.")
 
 if __name__ == "__main__":
     main()
