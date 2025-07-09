@@ -59,7 +59,7 @@ def find_optimal_k(data_std):
     return optimal_k, silhouette_scores
 
 # Main Streamlit App
-        st.set_page_config(layout="wide")
+    st.set_page_config(layout="wide")
         st.title("✈️ Clustering Analysis on Flight Data")
 
         st.markdown("## Dataset: `flight.csv`")
