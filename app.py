@@ -202,8 +202,3 @@ def main():
         st.error(f"Error: The file '{file_path}' was not found. Please make sure the file exists in the specified path.")
     except Exception as e:
         st.error(f"An error occurred: {e}")
-
-
-if __name__ == "__main__":
-    main()
-```
