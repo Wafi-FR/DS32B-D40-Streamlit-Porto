@@ -188,9 +188,5 @@ def find_optimal_k(data_std):
     - **Cluster 3 (Pasif / Baru):** Low activity across most metrics, possibly new or infrequent flyers. Implement first-flight promotions and membership benefits campaigns.
     """)
 
-
-    else:
-        st.info("Please upload a CSV file to get started.")
-
 if __name__ == "__main__":
     main()
