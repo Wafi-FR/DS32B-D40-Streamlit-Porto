@@ -20,12 +20,10 @@ from sklearn.decomposition import PCA
 
 
 # Load data
-st.set_page_config(layout="wide")
-st.title("✈️ Clustering Analysis on Flight Data")
-
-st.markdown("## Dataset: `flight.csv`")
-df = pd.read_csv("flight.csv")
-st.write("### Preview Data")
+@st.cache_data # Cache the data loading for performance
+def load_data(file_path):
+    df = pd.read_csv(file_path)
+    return df
 
 # Data Preprocessing
 def preprocess_data(df):
@@ -61,126 +59,151 @@ def find_optimal_k(data_std):
     return optimal_k, silhouette_scores
 
 # Main Streamlit App
+def main():
+    st.title("Customer Segmentation Analysis (Flight Data)")
 
-    st.dataframe(df.head())
-
-    st.subheader("Data Preprocessing")
-    df_cleaned = preprocess_data(df.copy())
-    st.write(f"Shape after dropping columns and missing values: {df_cleaned.shape}")
-    st.write("Cleaned Data Preview:")
-    st.write(df_cleaned.head())
-
-    st.subheader("Exploratory Data Analysis (EDA)")
-
-    # Display basic stats
-    st.write("Statistical Summary:")
-    st.write(df_cleaned.describe())
-
-    # Heatmap
-    st.subheader("Correlation Heatmap")
-    fig_heatmap, ax_heatmap = plt.subplots(figsize=(14, 10))
-    corr_matrix = df_cleaned.corr(numeric_only=True) # Specify numeric_only=True
-    sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", square=True, ax=ax_heatmap)
-    ax_heatmap.set_title("Heatmap Korelasi Antar Fitur Numerik")
-    st.pyplot(fig_heatmap)
-
-    # Distribution Plots
-    st.subheader("Distribution of Numeric Features")
-    num_cols = df_cleaned.columns
-    n_cols_dist = 3
-    n_rows_dist = (len(num_cols) + n_cols_dist - 1) // n_cols_dist
-    fig_dist, axes_dist = plt.subplots(nrows=n_rows_dist, ncols=n_cols_dist, figsize=(18, n_rows_dist * 4))
-    axes_dist = axes_dist.flatten()
-
-    for i, col in enumerate(num_cols):
-        sns.histplot(df_cleaned[col], bins=30, kde=True, ax=axes_dist[i], color="steelblue")
-        axes_dist[i].set_title(f'Distribusi {col}')
-
-    # Remove empty subplots
-    for j in range(i + 1, len(axes_dist)):
-        fig_dist.delaxes(axes_dist[j])
-
-    plt.tight_layout()
-    st.pyplot(fig_dist)
-
-
-    st.subheader("K-Means Clustering")
-
-    # Perform initial clustering (can be adjusted later)
-    df_clustered, data_std_df, data_std = perform_clustering(df_cleaned.copy()) # Use a copy
-
-    st.write("Data with cluster assignments:")
-    st.write(df_clustered.head())
-
-    # Elbow Method
-    st.subheader("Elbow Method for Optimal k")
-    inertia = []
-    range_k = range(2, 11)
-    for i in range_k:
-        kmeans = KMeans(n_clusters=i, random_state=0, n_init=10)
-        kmeans.fit(data_std)
-        inertia.append(kmeans.inertia_)
-
-    fig_elbow, ax_elbow = plt.subplots(figsize=(10, 6))
-    sns.lineplot(x=list(range_k), y=inertia, color='#000087', linewidth = 4, ax=ax_elbow)
-    sns.scatterplot(x=list(range_k), y=inertia, s=300, color='#800000',  linestyle='--', ax=ax_elbow)
-    ax_elbow.set_title("Elbow Method")
-    ax_elbow.set_xlabel("Number of Clusters (k)")
-    ax_elbow.set_ylabel("Inertia")
-    st.pyplot(fig_elbow)
-
-    # Silhouette Score Analysis
-    st.subheader("Silhouette Score Analysis")
-    optimal_k, silhouette_scores = find_optimal_k(data_std)
-
-    fig_silhouette, ax_silhouette = plt.subplots(figsize=(10, 6))
-    sns.lineplot(x=list(silhouette_scores.keys()), y=list(silhouette_scores.values()), marker='o', ax=ax_silhouette)
-    ax_silhouette.set_title("Silhouette Scores for Different k")
-    ax_silhouette.set_xlabel("Number of Clusters (k)")
-    ax_silhouette.set_ylabel("Silhouette Score")
-    st.pyplot(fig_silhouette)
-
-    st.write(f"Optimal number of clusters based on Silhouette Score: **{optimal_k}** with a score of **{silhouette_scores[optimal_k]:.4f}**")
-
-    # Re-run clustering with optimal k if different from initial
-    if df_clustered['clusters'].nunique() != optimal_k:
-        st.write(f"Re-running clustering with optimal k = {optimal_k}")
-        df_clustered, data_std_df, data_std = perform_clustering(df_cleaned.copy(), n_clusters=optimal_k)
-
-
-    # Visualize Clusters using PCA
-    st.subheader("Cluster Visualization (PCA)")
-    pca = PCA(n_components=2)
-    pcs = pca.fit_transform(data_std_df.drop('clusters', axis=1))
-
-    data_pca = pd.DataFrame(data = pcs, columns = ['PC 1', 'PC 2'])
-    data_pca['clusters'] = df_clustered['clusters'] # Use clusters from the df_clustered dataframe
-
-    fig_pca, ax_pca = plt.subplots(figsize=(15,10))
-    sns.scatterplot(
-        x="PC 1", y="PC 2",
-        hue="clusters",
-        edgecolor='green',
-        linestyle='--',
-        data=data_pca,
-        palette='viridis', # Use a different palette for better visibility
-        s=100, # Adjusted size
-        ax=ax_pca
-    )
-    ax_pca.set_title("PCA of Clusters")
-    st.pyplot(fig_pca)
-
-    # Cluster Profiling
-    st.subheader("Cluster Profiling")
-    cluster_summary = df_clustered.groupby('clusters').agg(['mean','median'])
-    st.write(cluster_summary)
-
-    st.subheader("Insights and Recommendations")
     st.write("""
-    Based on the cluster profiling, we can interpret the segments:
-
-    - **Cluster 0 (Dormant Loyal):** High FFP_TIER but low activity. Recommend re-engagement campaigns.
-    - **Cluster 1 (Loyal Traveler Aktif):** High FFP_TIER and decent activity, but low exchange count. Educate them on point redemption benefits.
-    - **Cluster 2 (High Value Elite):** Very high activity and value customers. Provide priority services and exclusive programs.
-    - **Cluster 3 (Pasif / Baru):** Low activity across most metrics, possibly new or infrequent flyers. Implement first-flight promotions and membership benefits campaigns.
+    This application performs customer segmentation using K-Means clustering on flight data.
     """)
+
+    # Hardcoded file path for the flight.csv file
+    file_path = "/content/sample_data/flight.csv"
+
+    try:
+        df = load_data(file_path)
+        st.success("Flight data loaded successfully!")
+
+        st.subheader("Original Data Preview")
+        st.write(df.head())
+
+        st.subheader("Data Preprocessing")
+        df_cleaned = preprocess_data(df.copy()) # Use a copy to avoid modifying the original loaded dataframe
+        st.write(f"Shape after dropping columns and missing values: {df_cleaned.shape}")
+        st.write("Cleaned Data Preview:")
+        st.write(df_cleaned.head())
+
+        st.subheader("Exploratory Data Analysis (EDA)")
+
+        # Display basic stats
+        st.write("Statistical Summary:")
+        st.write(df_cleaned.describe())
+
+        # Heatmap
+        st.subheader("Correlation Heatmap")
+        fig_heatmap, ax_heatmap = plt.subplots(figsize=(14, 10))
+        corr_matrix = df_cleaned.corr(numeric_only=True) # Specify numeric_only=True
+        sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", square=True, ax=ax_heatmap)
+        ax_heatmap.set_title("Heatmap Korelasi Antar Fitur Numerik")
+        st.pyplot(fig_heatmap)
+
+        # Distribution Plots
+        st.subheader("Distribution of Numeric Features")
+        num_cols = df_cleaned.columns
+        n_cols_dist = 3
+        n_rows_dist = (len(num_cols) + n_cols_dist - 1) // n_cols_dist
+        fig_dist, axes_dist = plt.subplots(nrows=n_rows_dist, ncols=n_cols_dist, figsize=(18, n_rows_dist * 4))
+        axes_dist = axes_dist.flatten()
+
+        for i, col in enumerate(num_cols):
+             sns.histplot(df_cleaned[col], bins=30, kde=True, ax=axes_dist[i], color="steelblue")
+             axes_dist[i].set_title(f'Distribusi {col}')
+
+        # Remove empty subplots
+        for j in range(i + 1, len(axes_dist)):
+            fig_dist.delaxes(axes_dist[j])
+
+        plt.tight_layout()
+        st.pyplot(fig_dist)
+
+
+        st.subheader("K-Means Clustering")
+
+        # Perform initial clustering (can be adjusted later)
+        df_clustered, data_std_df, data_std = perform_clustering(df_cleaned.copy()) # Use a copy
+
+        st.write("Data with cluster assignments:")
+        st.write(df_clustered.head())
+
+        # Elbow Method
+        st.subheader("Elbow Method for Optimal k")
+        inertia = []
+        range_k = range(2, 11)
+        for i in range_k:
+            kmeans = KMeans(n_clusters=i, random_state=0, n_init=10)
+            kmeans.fit(data_std)
+            inertia.append(kmeans.inertia_)
+
+        fig_elbow, ax_elbow = plt.subplots(figsize=(10, 6))
+        sns.lineplot(x=list(range_k), y=inertia, color='#000087', linewidth = 4, ax=ax_elbow)
+        sns.scatterplot(x=list(range_k), y=inertia, s=300, color='#800000',  linestyle='--', ax=ax_elbow)
+        ax_elbow.set_title("Elbow Method")
+        ax_elbow.set_xlabel("Number of Clusters (k)")
+        ax_elbow.set_ylabel("Inertia")
+        st.pyplot(fig_elbow)
+
+        # Silhouette Score Analysis
+        st.subheader("Silhouette Score Analysis")
+        optimal_k, silhouette_scores = find_optimal_k(data_std)
+
+        fig_silhouette, ax_silhouette = plt.subplots(figsize=(10, 6))
+        sns.lineplot(x=list(silhouette_scores.keys()), y=list(silhouette_scores.values()), marker='o', ax=ax_silhouette)
+        ax_silhouette.set_title("Silhouette Scores for Different k")
+        ax_silhouette.set_xlabel("Number of Clusters (k)")
+        ax_silhouette.set_ylabel("Silhouette Score")
+        st.pyplot(fig_silhouette)
+
+        st.write(f"Optimal number of clusters based on Silhouette Score: **{optimal_k}** with a score of **{silhouette_scores[optimal_k]:.4f}**")
+
+        # Re-run clustering with optimal k if different from initial
+        if df_clustered['clusters'].nunique() != optimal_k:
+             st.write(f"Re-running clustering with optimal k = {optimal_k}")
+             df_clustered, data_std_df, data_std = perform_clustering(df_cleaned.copy(), n_clusters=optimal_k)
+
+
+        # Visualize Clusters using PCA
+        st.subheader("Cluster Visualization (PCA)")
+        pca = PCA(n_components=2)
+        pcs = pca.fit_transform(data_std_df.drop('clusters', axis=1))
+
+        data_pca = pd.DataFrame(data = pcs, columns = ['PC 1', 'PC 2'])
+        data_pca['clusters'] = df_clustered['clusters'] # Use clusters from the df_clustered dataframe
+
+        fig_pca, ax_pca = plt.subplots(figsize=(15,10))
+        sns.scatterplot(
+            x="PC 1", y="PC 2",
+            hue="clusters",
+            edgecolor='green',
+            linestyle='--',
+            data=data_pca,
+            palette='viridis', # Use a different palette for better visibility
+            s=100, # Adjusted size
+            ax=ax_pca
+        )
+        ax_pca.set_title("PCA of Clusters")
+        st.pyplot(fig_pca)
+
+        # Cluster Profiling
+        st.subheader("Cluster Profiling")
+        cluster_summary = df_clustered.groupby('clusters').agg(['mean','median'])
+        st.write(cluster_summary)
+
+        st.subheader("Insights and Recommendations")
+        st.write("""
+        Based on the cluster profiling, we can interpret the segments:
+
+        - **Cluster 0 (Dormant Loyal):** High FFP_TIER but low activity. Recommend re-engagement campaigns.
+        - **Cluster 1 (Loyal Traveler Aktif):** High FFP_TIER and decent activity, but low exchange count. Educate them on point redemption benefits.
+        - **Cluster 2 (High Value Elite):** Very high activity and value customers. Provide priority services and exclusive programs.
+        - **Cluster 3 (Pasif / Baru):** Low activity across most metrics, possibly new or infrequent flyers. Implement first-flight promotions and membership benefits campaigns.
+        """)
+
+
+    except FileNotFoundError:
+        st.error(f"Error: The file '{file_path}' was not found. Please make sure the file exists in the specified path.")
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
+
+
+if __name__ == "__main__":
+    main()
+```
