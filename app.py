@@ -59,15 +59,13 @@ def find_optimal_k(data_std):
     return optimal_k, silhouette_scores
 
 # Main Streamlit App
-def main():
-    st.title("Customer Segmentation Analysis (Flight Data)")
+st.set_page_config(layout="wide")
+st.title("✈️ Clustering Analysis on Flight Data")
 
-    st.write("""
-    This application performs customer segmentation using K-Means clustering on flight data.
-    """)
-
-   # File Uploader
-    uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"])
+st.markdown("## Dataset: `flight.csv`")
+df = pd.read_csv("flight.csv")
+st.write("### Preview Data")
+st.dataframe(df.head())
 
     if uploaded_file is not None:
         df = load_data(uploaded_file)
