@@ -11,15 +11,13 @@ Original file is located at
 import streamlit as st
 import pandas as pd
 import numpy as np
-import pickle
-import plotly.express as px
-import plotly.graph_objects as go
-from datetime import datetime, timedelta
-
+import seaborn as sns
+import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import silhouette_score
 from sklearn.decomposition import PCA
+
 
 # Load data
 @st.cache_data # Cache the data loading for performance
