@@ -187,6 +187,3 @@ def find_optimal_k(data_std):
     - **Cluster 2 (High Value Elite):** Very high activity and value customers. Provide priority services and exclusive programs.
     - **Cluster 3 (Pasif / Baru):** Low activity across most metrics, possibly new or infrequent flyers. Implement first-flight promotions and membership benefits campaigns.
     """)
-
-if __name__ == "__main__":
-    main()
