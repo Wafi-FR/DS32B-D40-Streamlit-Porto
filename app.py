@@ -20,10 +20,12 @@ from sklearn.decomposition import PCA
 
 
 # Load data
-@st.cache_data # Cache the data loading for performance
-def load_data(file_path):
-    df = pd.read_csv(file_path)
-    return df
+st.set_page_config(layout="wide")
+st.title("✈️ Clustering Analysis on Flight Data")
+
+st.markdown("## Dataset: `flight.csv`")
+df = pd.read_csv("flight.csv")
+st.write("### Preview Data")
 
 # Data Preprocessing
 def preprocess_data(df):
@@ -59,12 +61,7 @@ def find_optimal_k(data_std):
     return optimal_k, silhouette_scores
 
 # Main Streamlit App
-    st.set_page_config(layout="wide")
-    st.title("✈️ Clustering Analysis on Flight Data")
 
-    st.markdown("## Dataset: `flight.csv`")
-    df = pd.read_csv("flight.csv")
-    st.write("### Preview Data")
     st.dataframe(df.head())
 
     st.subheader("Data Preprocessing")
