@@ -52,9 +52,7 @@ def main():
     st.set_page_config(layout="wide")
     st.title("✈️ Customer Segmentation Analysis (Flight Data)")
 
-    st.write("""
-    Aplikasi ini dibuat untuk mengolah dataset dan menampilkan hasil Clusteringnya.
-    """)
+    st.write("This application performs customer segmentation using K-Means clustering on flight data.")
 
     df = load_data()
     st.subheader("Original Data Preview")
