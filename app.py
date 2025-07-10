@@ -62,7 +62,15 @@ def main():
     st.set_page_config(layout="wide")
     st.title("✈️ Customer Segmentation Analysis (Flight Data)")
 
-    st.write("This application performs customer segmentation using K-Means clustering on flight data.")
+    st.write("Clustering Analysis (Streamlit App)
+
+This Streamlit app performs an interactive clustering analysis on dataset using KMeans and PCA.
+
+#Features
+- Upload & preview
+- Perform KMeans clustering (select K via slider)
+- Visualize cluster separation with PCA
+- Show cluster distribution and summary stats.")
 
     df = load_data()
     st.subheader("Original Data Preview")
